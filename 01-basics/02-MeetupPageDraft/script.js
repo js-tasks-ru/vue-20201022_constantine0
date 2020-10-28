@@ -1,4 +1,4 @@
-import Vue from './vue.esm.browser.js';
+import { createApp } from './vue3.esm-browser.js';
 
 /** URL адрес API */
 const API_URL = 'https://course-vue.javascript.ru/api';
@@ -44,23 +44,71 @@ const agendaItemIcons = {
   other: 'cal-sm',
 };
 
-export const app = new Vue({
-  el: '#app',
+const APP_ELEMENT = "#app";
 
-  data: {
-    //
+export const app = createApp({
+  data() {
+    return {
+      meetup: {},
+    };
   },
 
   mounted() {
-    // Требуется получить данные митапа с API
+    this.fetchMeetupData();
   },
 
   computed: {
-    //
+    imageUrl() {
+      if (!this.meetup.imageId) {
+        return null;
+      }
+
+      return getMeetupCoverLink(this.meetup);
+    },
+
+    showInfoList() {
+      return this.meetup.organizer || this.meetup.place || this.meetup.date;
+    },
+
+    isAgendaExists() {
+      return this.meetup.agenda && this.meetup.agenda.length > 0
+    },
   },
 
   methods: {
-    // Получение данных с API предпочтительнее оформить отдельным методом,
-    // а не писать прямо в mounted()
+    async fetchMeetupData() {
+      const apiUrl = `${API_URL}/meetups/${MEETUP_ID}`;
+      const apiResponse = await fetch(apiUrl);
+
+      if (apiResponse.ok) {
+        const meetupData = await apiResponse.json();
+
+        this.$data.meetup = meetupData;
+      }
+    },
+
+    getDefaultPointTitle(type) {
+      return agendaItemTitles[type] || agendaItemTitles.other;
+    },
+
+    getPointIcon(type) {
+      return agendaItemIcons[type] || agendaItemIcons.other;
+    },
   },
 });
+
+app.config.globalProperties.$filters = {
+  localizeDate(timestamp) {
+    return new Date(timestamp).toLocaleDateString({
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  },
+
+  dateToHtml5Input(timestamp) {
+    return new Date(timestamp).toISOString().split("T")[0];
+  },
+};
+
+app.mount(APP_ELEMENT);
