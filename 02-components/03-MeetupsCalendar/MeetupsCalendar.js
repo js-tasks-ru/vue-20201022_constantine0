@@ -1,6 +1,10 @@
-/*
-  Полезные функции по работе с датой можно описать вне Vue компонента
- */
+import {
+  ONE_DAY_IN_MILLISECONDS,
+  getMonthFirstDay,
+  getNextMonthFirstDate,
+  getPrevMonthFirstDate,
+  getWeekMonday,
+} from './dateUtils.js';
 
 export const MeetupsCalendar = {
   name: 'MeetupsCalendar',
@@ -9,34 +13,85 @@ export const MeetupsCalendar = {
     <div class="rangepicker__calendar">
       <div class="rangepicker__month-indicator">
         <div class="rangepicker__selector-controls">
-          <button class="rangepicker__selector-control-left"></button>
-          <div>Июнь 2020</div>
-          <button class="rangepicker__selector-control-right"></button>
+          <button class="rangepicker__selector-control-left" @click="navigateBack"></button>
+          <div>{{ navigationTitle }}</div>
+          <button class="rangepicker__selector-control-right" @click="navigateForward"></button>
         </div>
       </div>
       <div class="rangepicker__date-grid">
-        <div class="rangepicker__cell rangepicker__cell_inactive">28</div>
-        <div class="rangepicker__cell rangepicker__cell_inactive">29</div>
-        <div class="rangepicker__cell rangepicker__cell_inactive">30</div>
-        <div class="rangepicker__cell rangepicker__cell_inactive">31</div>
-        <div class="rangepicker__cell">
-          1
-          <a class="rangepicker__event">Митап</a>
-          <a class="rangepicker__event">Митап</a>
+        <div v-for="data in calendarDays" class="rangepicker__cell" :class="{ 'rangepicker__cell_inactive': data.disabled }">
+            {{ data.day }}
+            <a v-for="meetup in data['meetups']" class="rangepicker__event">{{ meetup.title }}</a>
         </div>
-        <div class="rangepicker__cell">2</div>
-        <div class="rangepicker__cell">3</div>
       </div>
     </div>
   </div>`,
 
-  // Пропсы
+  props: {
+    meetups: {
+      type: Array,
+      required: true,
+    },
+  },
 
-  // В качестве локального состояния требуется хранить что-то,
-  // что позволит определить текущий показывающийся месяц.
-  // Изначально должен показываться текущий месяц
+  data() {
+    return {
+      displayDate: getMonthFirstDay(new Date()),
+    };
+  },
 
-  // Вычислимые свойства помогут как с получением списка дней, так и с выводом информации
+  computed: {
+    meetupsByDate() {
+      const meetupsByDate = {};
+      for (let meetup of this.meetups) {
+        const meetupDate = new Date(meetup.date).toDateString();
 
-  // Методы понадобятся для переключения между месяцами
+        if (!meetupsByDate[meetupDate]) {
+          meetupsByDate[meetupDate] = [];
+        }
+
+        meetupsByDate[meetupDate].push(meetup);
+      }
+
+      return meetupsByDate;
+    },
+
+    navigationTitle() {
+      return `${this.displayDate.toLocaleDateString('default', {
+        month: 'long',
+        year: 'numeric',
+      })}`;
+    },
+
+    calendarDays() {
+      const date = getWeekMonday(this.displayDate);
+      const days = [];
+      let isMonthEnded = false;
+
+      while (!isMonthEnded || (isMonthEnded && days.length % 7 != 0)) {
+        days.push({
+          day: date.getDate(),
+          disabled: date.getMonth() != this.displayDate.getMonth(),
+          meetups: this.meetupsByDate[date.toDateString()] ?? [],
+        });
+
+        date.setTime(date.getTime() + ONE_DAY_IN_MILLISECONDS);
+
+        isMonthEnded =
+          date.getMonth() > this.displayDate.getMonth() ||
+          date.getFullYear() > this.displayDate.getFullYear();
+      }
+
+      return days;
+    },
+  },
+
+  methods: {
+    navigateBack() {
+      this.displayDate = getPrevMonthFirstDate(this.displayDate);
+    },
+    navigateForward() {
+      this.displayDate = getNextMonthFirstDate(this.displayDate);
+    },
+  },
 };
