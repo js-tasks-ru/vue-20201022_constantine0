@@ -26,6 +26,12 @@
 </template>
 
 <script>
+// Необходимо улучшить работу компонента с клавиатурой:
+// -) при навигации по клавише Tab обновлять стили чтобы указать что компонент находится в фокусе;
+// -) предусмотреть навигацию по вариантам клавишами управления курсором (стрелки вверх и вниз).
+// Сейчас при клике вне элемента, список не закрывается. Это стоит поправить и, возможно,
+// добавить программное управление компонентом (открыть / закрыть список).
+
 import AppIcon from './AppIcon';
 
 export default {
@@ -55,11 +61,11 @@ export default {
 
   computed: {
     isIconSupported() {
-      return !!this.options.find(option => 'icon' in option);
+      return !!this.options.find((option) => 'icon' in option);
     },
 
     selected() {
-      return this.options.find(option => option.value === this.value);
+      return this.options.find((option) => option.value === this.value);
     },
   },
 
