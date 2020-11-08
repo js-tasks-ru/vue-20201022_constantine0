@@ -1,12 +1,8 @@
 <template>
   <div class="toasts">
-    <div class="toast toast_success">
-      <app-icon icon="check-circle" />
-      <span>Success</span>
-    </div>
-    <div class="toast toast_error">
-      <app-icon icon="alert-circle" />
-      <span>Error</span>
+    <div v-for="(entry, number) in queue" :key="number" class="toast" :class="[ entry.toast.success ? 'toast_success' : 'toast_error' ]">
+      <app-icon :icon="entry.toast.success ? 'check-circle' : 'alert-circle'" />
+      <span>{{ entry.toast.message }}</span>
     </div>
   </div>
 </template>
@@ -19,12 +15,41 @@ const DELAY = 5000;
 export default {
   name: 'AppToast',
 
+  data() {
+    return {
+      queue: {},
+      index: 0,
+    };
+  },
+
   components: { AppIcon },
 
   methods: {
-    error(message) {},
+    error(message) {
+      this.appendToast(message, false);
+    },
 
-    success(message) {},
+    success(message) {
+      this.appendToast(message, true);
+    },
+
+    appendToast(message, success) {
+      const number = this.index++;
+
+      this.$set(this.queue, number, {
+        toast: {
+          message,
+          success,
+        },
+        timeout: setTimeout(() => this.$delete(this.queue, number), DELAY),
+      });
+    },
+  },
+
+  beforeDestroy() {
+    for (const entry in this.queue) {
+      clearTimeout(entry.timeout);
+    }
   },
 };
 </script>
