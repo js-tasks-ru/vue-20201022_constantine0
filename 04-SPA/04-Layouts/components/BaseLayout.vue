@@ -1,10 +1,8 @@
 <template>
-  <div>
+  <div class="wrapper bg-grey">
     <the-header />
     <main class="main">
-      <div class="container">
-        <router-view />
-      </div>
+      <router-view />
     </main>
     <the-footer />
   </div>
@@ -27,10 +25,5 @@ export default {
 <style scoped>
 main {
   flex: 1 0 auto;
-}
-.page.page_onboarding {
-  max-width: 374px;
-  width: 100%;
-  margin: 0 auto;
 }
 </style>
