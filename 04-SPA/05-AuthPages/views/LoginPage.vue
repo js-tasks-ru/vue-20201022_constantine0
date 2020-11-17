@@ -1,5 +1,5 @@
 <template>
-  <form class="form" @submit="login">
+  <form class="form" @submit.prevent="login">
     <div class="form-group">
       <label class="form-label">Email</label>
       <div class="input-group">
