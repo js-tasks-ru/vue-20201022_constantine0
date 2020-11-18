@@ -6,6 +6,7 @@
 
 <script>
 import MeetupsView from '../components/MeetupsView';
+import Vue from 'vue';
 
 export default {
   name: 'PageWithQuery',
@@ -19,37 +20,31 @@ export default {
   },
 
   computed: {
-    params() {
-      let params = { ...this.$options.defaultFilters };
+    params: {
+      get() {
+        const params = Object.assign({}, this.$options.defaultFilters, this.$route.query);
+        Vue.observable(params);
 
-      for (const [name, value] of Object.entries(this.$route.query)) {
-        params[name] = value;
-      }
+        return params;
+      },
+    },
+  },
 
-      const router = this.$router;
-      const defaultFilters = this.$options.defaultFilters;
+  watch: {
+    params: {
+      deep: true,
+      handler() {
+        const query = Object.fromEntries(
+          Object.entries(this.params).filter(
+            ([name, value]) => value != this.$options.defaultFilters[name],
+          ),
+        );
 
-      return new Proxy(params, {
-        set(obj, key, value) {
-          if (obj[key] === value) {
-            return true;
-          }
-          obj[key] = value;
-
-          const query = Object.fromEntries(
-            Object.entries(obj).filter(
-              ([name, value]) => value != defaultFilters[name],
-            ),
-          );
-
-          // Здесь я выбрал router.push,
-          // согласно документации единственное различие - это новое состояние в истории при смене фильтров.
-          // Я проверил другие приложения (Ютуб),там смена фильтров сохраняется в истории и я решил сделать также.
-          router.push({ query });
-
-          return true;
-        },
-      });
+        // Здесь я выбрал router.push,
+        // согласно документации единственное различие - это новое состояние в истории при смене фильтров.
+        // Я проверил другие приложения (Ютуб),там смена фильтров сохраняется в истории и я решил сделать также.
+        this.$router.push({ query });
+      },
     },
   },
 };
