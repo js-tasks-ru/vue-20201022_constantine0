@@ -1,10 +1,11 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import MeetupsPage from '../views/MeetupsPage';
-import LoginPage from '../views/LoginPage';
-import FormPage from '../views/FormPage';
 
 Vue.use(VueRouter);
+
+const MeetupsPage = () => import('../views/MeetupsPage');
+const LoginPage = () => import('../views/LoginPage');
+const FormPage = () => import('../views/FormPage');
 
 export const router = new VueRouter({
   mode: 'history',
