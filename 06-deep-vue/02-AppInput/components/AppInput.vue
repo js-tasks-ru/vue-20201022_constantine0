@@ -11,8 +11,6 @@
         'form-control_rounded': this.rounded,
       }"
       class="form-control"
-      @input="$emit('input', $event.target.value)"
-      @change="$emit('change', $event.target.value)"
     />
     <slot name="right-icon" />
   </div>
@@ -80,12 +78,11 @@ export default {
     },
 
     listeners() {
-      const { ...listeners } = this.$listeners;
-
-      delete listeners['input'];
-      delete listeners['change'];
-
-      return listeners;
+      return {
+        ...this.$listeners,
+        input: ($event) => this.$emit('input', $event.target.value),
+        change: ($event) => this.$emit('change', $event.target.value),
+      };
     },
   },
 
