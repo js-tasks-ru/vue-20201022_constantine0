@@ -1,18 +1,99 @@
 <template>
-  <div
-    class="input-group input-group_icon input-group_icon-left input-group_icon-right"
-  >
-    <img class="icon" />
-
-    <input class="form-control form-control_rounded form-control_sm" />
-
-    <img class="icon" />
+  <div class="input-group" :class="wrapperClasses">
+    <slot name="left-icon" />
+    <component
+      :is="componentType"
+      :value.prop="value"
+      v-bind="$attrs"
+      v-on="listeners"
+      :class="{
+        'form-control_sm': this.small,
+        'form-control_rounded': this.rounded,
+      }"
+      class="form-control"
+    />
+    <slot name="right-icon" />
   </div>
 </template>
 
 <script>
 export default {
   name: 'AppInput',
+
+  data() {
+    return {
+      hasLeftIcon: false,
+      hasRightIcon: false,
+    };
+  },
+
+  mounted() {
+    this.updateSlotValues();
+  },
+
+  updated() {
+    this.updateSlotValues();
+  },
+
+  props: {
+    small: {
+      type: Boolean,
+      default: false,
+    },
+    rounded: {
+      type: Boolean,
+      default: false,
+    },
+    multiline: {
+      type: Boolean,
+      default: false,
+    },
+    value: {
+      type: String,
+      default: '',
+    },
+  },
+
+  computed: {
+    componentType() {
+      return this.multiline ? 'textarea' : 'input';
+    },
+
+    wrapperClasses() {
+      let classes = [];
+
+      if (this.hasLeftIcon || this.hasRightIcon) {
+        classes.push('input-group_icon');
+
+        if (this.hasLeftIcon) {
+          classes.push('input-group_icon-left');
+        }
+
+        if (this.hasRightIcon) {
+          classes.push('input-group_icon-right');
+        }
+      }
+
+      return classes.join(' ');
+    },
+
+    listeners() {
+      return {
+        ...this.$listeners,
+        input: ($event) => this.$emit('input', $event.target.value),
+        change: ($event) => this.$emit('change', $event.target.value),
+      };
+    },
+  },
+
+  inheritAttrs: false,
+
+  methods: {
+    updateSlotValues() {
+      this.hasLeftIcon = 'left-icon' in this.$slots;
+      this.hasRightIcon = 'right-icon' in this.$slots;
+    },
+  },
 };
 </script>
 
