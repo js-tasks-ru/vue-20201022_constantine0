@@ -1,5 +1,5 @@
 <template>
-  <div class="messages-list">
+  <div class="messages-list" ref="messages_list">
     <article v-for="message in messages" :key="message.id" class="message">
       {{ message.text }}
     </article>
@@ -14,6 +14,16 @@ export default {
     messages: {
       type: Array,
       required: true,
+    },
+  },
+
+  watch: {
+    messages() {
+      this.$nextTick(() => {
+        const messagesList = this.$refs['messages_list'];
+
+        messagesList.scrollTop = messagesList.scrollHeight - messagesList.clientHeight;
+      });
     },
   },
 };
